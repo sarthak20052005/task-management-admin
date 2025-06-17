@@ -1,22 +1,25 @@
 import React, { useState } from 'react';
-import { Check, Trash2,StickyNote } from 'lucide-react';
+import { Check, Trash2, StickyNote, Pencil, X, Save } from 'lucide-react';
 
-//compnents
+// Components
 import Notes from './Notes';
 
-const Task = ({ task, onComplete, onDelete, onSaveNote }) => {
-
+const Task = ({ task, onComplete, onDelete, onSave, onEdit }) => {
   const [showNotes, setShowNotes] = useState(false);
   const [notesText, setNotesText] = useState(task.note || '');
+  const [isEdit, setIsEdit] = useState(false);
+  const [editedTask, setEditedTask] = useState(task.text || '');
 
   const handleSaveNote = () => {
-    onSaveNote(task.id, notesText); // Call back to App to store note
+    onSave(task.id, notesText);
     setShowNotes(false);
   };
 
-  const toggleNotes = () => {
-    setShowNotes(prev => !prev);
-    setNoteText(task.note || '');
+  const handleEditTask = () => {
+    if (editedTask.trim()) {
+      onEdit(task.id, editedTask.trim());
+      setIsEdit(false);
+    }
   };
 
   return (
@@ -28,25 +31,49 @@ const Task = ({ task, onComplete, onDelete, onSaveNote }) => {
         >
           {task.completed && <Check size={12} />}
         </button>
-        <span className={`task-text ${task.completed ? 'strikethrough' : ''}`}>
-          {task.text}
-        </span>
-        {onComplete ? <span className='deadline-text'>
-          Deadline:{new Date(task.deadline).toLocaleDateString()}
-        </span>:''}
+
+        <div className="content">
+          {isEdit ? (
+            <input
+              type="text"
+              value={editedTask}
+              onChange={(e) => setEditedTask(e.target.value)}
+              className="edit-input"
+            />
+          ) : (
+            <div className={`task-text ${task.completed ? 'strikethrough' : ''}`}>
+              {task.text}
+            </div>
+          )}
+          <div className="deadline-text">
+            Deadline: {new Date(task.deadline).toLocaleDateString()}
+          </div>
+        </div>
       </div>
-      {/* Notes Button */}
+
       <button onClick={() => setShowNotes(true)} className="note-btn">
         <StickyNote size={16} />
       </button>
 
-      <button
-        onClick={() => onDelete(task.id)}
-        className="delete-btn"
-      >
+      {isEdit ? (
+        <>
+          <button onClick={handleEditTask}>
+            <Save size={16} />
+          </button>
+          <button onClick={() => setIsEdit(false)}>
+            <X size={16} />
+          </button>
+        </>
+      ) : (
+        <button onClick={() => setIsEdit(true)}>
+          <Pencil size={16} />
+        </button>
+      )}
+
+      <button onClick={() => onDelete(task.id)} className="delete-btn">
         <Trash2 size={16} />
       </button>
-      {/* Notes Modal */}
+
       {showNotes && (
         <Notes
           noteText={notesText}

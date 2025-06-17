@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
 
 * {
   margin: 0;
@@ -14,8 +14,8 @@ html, body {
 
 body {
   font-family: 'Host Grotesk';
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-  color: #e5e5e5;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #212529;
   min-height: 100vh;
 }
 
@@ -43,7 +43,7 @@ body {
 .app-title {
   font-size: clamp(2rem, 5vw, 3rem);
   font-weight: 700;
-  background: linear-gradient(135deg, #ffffff 0%, #888888 100%);
+  background: linear-gradient(135deg, #212529 0%, #6c757d 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -56,68 +56,16 @@ body {
   gap: 0.75rem;
   margin-bottom: 2.5rem;
   align-items: stretch;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: #ffffff;
+  border: 1px solid #dee2e6;
   border-radius: 12px;
   padding: 0.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   flex-shrink: 0;
   width: 100%;
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
-}
-
-/* Search container - same styling as add-form but positioned above it */
-.search-container {
-  display: flex;
-  align-items: center;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  border-radius: 12px;
-  padding: 0.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto 1rem auto; /* margin-bottom to separate from add-form */
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: transparent;
-  border: 1px solid #3a3a3a;
-  border-radius: 8px;
-  color: #e5e5e5;
-  font-family: 'Host Grotesk', sans-serif;
-  font-size: 1rem;
-  font-weight: 400;
-  transition: all 0.2s ease;
-  min-height: 48px;
-  flex: 1;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #555555;
-  background: #252525;
-}
-
-.search-input::placeholder {
-  color: #888888;
-}
-
-/* Mobile responsive adjustments */
-@media (max-width: 640px) {
-  .search-container {
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-  }
-  
-  .search-input {
-    font-size: 16px; /* Prevents zoom on iOS */
-    padding: 0.875rem 1rem;
-  }
 }
 
 .dropdown-container {
@@ -130,10 +78,10 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  background: #2a2a2a;
-  border: 1px solid #3a3a3a;
+  background: #f8f9fa;
+  border: 1px solid #ced4da;
   border-radius: 8px;
-  color: #e5e5e5;
+  color: #212529;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 500;
   cursor: pointer;
@@ -143,13 +91,13 @@ body {
 }
 
 .dropdown-trigger:hover {
-  background: #333333;
-  border-color: #4a4a4a;
+  background: #e9ecef;
+  border-color: #adb5bd;
 }
 
 .dropdown-trigger.open {
-  border-color: #555555;
-  background: #333333;
+  border-color: #6c757d;
+  background: #e9ecef;
 }
 
 .dropdown-menu {
@@ -158,10 +106,10 @@ body {
   left: 0;
   right: 0;
   margin-top: 0.25rem;
-  background: #2a2a2a;
-  border: 1px solid #3a3a3a;
+  background: #ffffff;
+  border: 1px solid #ced4da;
   border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   z-index: 100;
   overflow: hidden;
 }
@@ -171,23 +119,23 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  color: #e5e5e5;
+  color: #212529;
   cursor: pointer;
   transition: background-color 0.2s ease;
   font-weight: 500;
 }
 
 .dropdown-option:hover {
-  background: #333333;
+  background: #f8f9fa;
 }
 
 .main-input {
   flex: 1;
   padding: 0.75rem 1rem;
   background: transparent;
-  border: 1px solid #3a3a3a;
+  border: 1px solid #ced4da;
   border-radius: 8px;
-  color: #e5e5e5;
+  color: #212529;
   font-family: 'Host Grotesk', sans-serif;
   font-size: 1rem;
   font-weight: 400;
@@ -197,12 +145,12 @@ body {
 
 .main-input:focus {
   outline: none;
-  border-color: #555555;
-  background: #252525;
+  border-color: #6c757d;
+  background: #f8f9fa;
 }
 
 .main-input::placeholder {
-  color: #888888;
+  color: #6c757d;
 }
 
 .add-btn {
@@ -220,27 +168,27 @@ body {
 }
 
 .add-btn.primary {
-  background: linear-gradient(135deg, #333333 0%, #4a4a4a 100%);
+  background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .add-btn.primary:hover {
-  background: linear-gradient(135deg, #404040 0%, #555555 100%);
+  background: linear-gradient(135deg, #343a40 0%, #495057 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .add-btn.secondary {
-  background: #2a2a2a;
-  color: #e5e5e5;
-  border: 1px solid #3a3a3a;
+  background: #f8f9fa;
+  color: #212529;
+  border: 1px solid #ced4da;
   padding: 0.5rem;
 }
 
 .add-btn.secondary:hover {
-  background: #333333;
-  border-color: #4a4a4a;
+  background: #e9ecef;
+  border-color: #adb5bd;
 }
 
 .content-area {
@@ -275,7 +223,7 @@ body {
   gap: 0.75rem;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #ffffff;
+  color: #212529;
   margin-bottom: 1.5rem;
   letter-spacing: -0.01em;
   flex-shrink: 0;
@@ -283,7 +231,7 @@ body {
 
 .separator {
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #333333 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, #dee2e6 50%, transparent 100%);
   margin: 1rem 0;
 }
 
@@ -293,23 +241,22 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0.4rem;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: #ffffff;
+  border: 1px solid #dee2e6;
   border-radius: 10px;
   margin-bottom: 0.75rem;
   transition: all 0.2s ease;
 }
 
 .task-item:hover {
-  background: #1f1f1f;
-  border-color: #3a3a3a;
-  /* transform: translateY(-1px); */
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  background: #f8f9fa;
+  border-color: #ced4da;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
 .task-item.completed {
   opacity: 0.6;
-  background: #151515;
+  background: #f1f3f4;
 }
 
 .task-content {
@@ -323,7 +270,7 @@ body {
 .checkbox {
   width: 20px;
   height: 20px;
-  border: 2px solid #4a4a4a;
+  border: 2px solid #adb5bd;
   border-radius: 25px;
   background: transparent;
   cursor: pointer;
@@ -334,18 +281,18 @@ body {
 }
 
 .checkbox:hover {
-  border-color: #666666;
-  background: #252525;
+  border-color: #6c757d;
+  background: #f8f9fa;
 }
 
 .checkbox.checked {
   background: #ff5a23;
-  border-color: #555555;
+  border-color: #ff5a23;
   color: #ffffff;
 }
 
 .task-text {
-  color: #e5e5e5;
+  color: #212529;
   font-weight: 400;
   font-size: 1rem;
   line-height: 1.5;
@@ -355,13 +302,13 @@ body {
 
 .task-text.strikethrough {
   text-decoration: line-through;
-  color: #888888;
+  color: #6c757d;
 }
 
 .delete-btn {
   background: transparent;
   border: none;
-  color: #666666;
+  color: #adb5bd;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 6px;
@@ -373,14 +320,14 @@ body {
 }
 
 .delete-btn:hover {
-  color: #ff6b6b;
-  background: #2a1a1a;
+  color: #dc3545;
+  background: #f8d7da;
 }
 
 /* Todo List Styles */
 .todo-list-item {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: #ffffff;
+  border: 1px solid #dee2e6;
   border-radius: 12px;
   margin-bottom: 1rem;
   overflow: hidden;
@@ -388,13 +335,13 @@ body {
 }
 
 .todo-list-item:hover {
-  border-color: #3a3a3a;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border-color: #ced4da;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .todo-list-item.completed {
   opacity: 0.7;
-  background: #151515;
+  background: #f1f3f4;
 }
 
 .list-header {
@@ -402,8 +349,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  background: #1f1f1f;
-  border-bottom: 1px solid #2a2a2a;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .list-info {
@@ -417,7 +364,7 @@ body {
 .list-name {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #ffffff;
+  color: #212529;
   margin: 0;
   letter-spacing: -0.01em;
   word-break: break-word;
@@ -426,11 +373,11 @@ body {
 
 .list-name.strikethrough {
   text-decoration: line-through;
-  color: #888888;
+  color: #6c757d;
 }
 
 .task-count {
-  color: #888888;
+  color: #6c757d;
   font-weight: 500;
   font-size: 0.9rem;
   flex-shrink: 0;
@@ -444,8 +391,8 @@ body {
 
 .toggle-btn {
   background: transparent;
-  border: 1px solid #3a3a3a;
-  color: #888888;
+  border: 1px solid #ced4da;
+  color: #6c757d;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 6px;
@@ -456,14 +403,14 @@ body {
 }
 
 .toggle-btn:hover {
-  color: #e5e5e5;
-  border-color: #4a4a4a;
-  background: #252525;
+  color: #212529;
+  border-color: #adb5bd;
+  background: #f8f9fa;
 }
 
 .list-tasks {
   padding: 1.5rem;
-  background: #1a1a1a;
+  background: #ffffff;
 }
 
 .add-task-form {
@@ -475,10 +422,10 @@ body {
 .task-input {
   flex: 1;
   padding: 0.75rem 1rem;
-  background: #252525;
-  border: 1px solid #3a3a3a;
+  background: #f8f9fa;
+  border: 1px solid #ced4da;
   border-radius: 8px;
-  color: #e5e5e5;
+  color: #212529;
   font-family: 'Host Grotesk', sans-serif;
   font-size: 0.95rem;
   transition: all 0.2s ease;
@@ -487,17 +434,17 @@ body {
 
 .task-input:focus {
   outline: none;
-  border-color: #4a4a4a;
-  background: #2a2a2a;
+  border-color: #6c757d;
+  background: #ffffff;
 }
 
 .task-input::placeholder {
-  color: #666666;
+  color: #adb5bd;
 }
 
 .empty-state {
   text-align: center;
-  color: #666666;
+  color: #adb5bd;
   font-style: italic;
   padding: 2rem;
   font-size: 1.1rem;
@@ -514,27 +461,27 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: #f8f9fa;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333333;
+  background: #ced4da;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a4a4a;
+  background: #adb5bd;
 }
 
 /* Focus styles for accessibility */
 *:focus {
-  outline: 2px solid #555555;
+  outline: 2px solid #0d6efd;
   outline-offset: 2px;
 }
 
 button:focus,
 input:focus {
-  outline: 2px solid #666666;
+  outline: 2px solid #0d6efd;
   outline-offset: 2px;
 }
 
@@ -713,55 +660,55 @@ input:focus {
   }
 }
 
-/* Glassmorphic Calendar Container */
+/* Light Theme Calendar Container */
 .react-datepicker {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   padding: 10px;
-  color: #fff;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  color: #212529;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 /* Header (Month and Year) */
 .react-datepicker__header {
   background: transparent;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   padding-bottom: 8px;
 }
 
 /* Day Names */
 .react-datepicker__day-name {
-  color: #ffa500; /* orange text */
+  color: #ff5a23; /* orange text */
 }
 
 /* Individual Days */
 .react-datepicker__day {
-  color: #fffcfc;
+  color: #212529;
   transition: all 0.2s ease;
 }
 
 .react-datepicker__day:hover {
-  background-color: rgba(255, 165, 0, 0.3); /* orange hover */
+  background-color: rgba(255, 90, 35, 0.15); /* light orange hover */
   border-radius: 6px;
 }
 
 .react-datepicker__current-month {
-  color: #ffa500;
+  color: #ff5a23;
 }
 
 /* Selected Day */
 .react-datepicker__day--selected,
 .react-datepicker__day--keyboard-selected {
-  background-color: #ffa500 !important; /* orange */
-  color: rgb(255, 255, 255);
+  background-color: #ff5a23 !important; /* orange */
+  color: #ffffff;
   border-radius: 6px;
 }
 
 /* Today Highlight */
 .react-datepicker__day--today {
-  border: 1px solid #ffa500;
+  border: 1px solid #ff5a23;
   border-radius: 6px;
 }
 
@@ -773,5 +720,5 @@ input:focus {
 /* Deadline */
 .deadline-text{
   font-size: small;
-  color: #ff411f9f;
+  color: #dc3545;
 }

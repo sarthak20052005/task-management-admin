@@ -13,12 +13,32 @@ const TodoList = ({
   onAddTask,
   onCompleteTask,
   onDeleteTask,
+  onDeleteTaskAgain
 }) => {
   const [newTask, setNewTask] = useState("");
   const [showTasks, setShowTasks] = useState(false);
   const [complete, setComeplete] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [deadline, setDeadline] = useState(null);
+  const [doNotAskTaskDelete, setDoNotAskTaskDelete] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(`dontAskAgain_task_list_${list.id}`);
+    if (saved === 'true') {
+      setDoNotAskTaskDelete(true);
+    }
+  }, [list.id]);
+
+  const toggleDoNotAskTaskDelete = () => {
+    const updated = !doNotAskTaskDelete;
+    setDoNotAskTaskDelete(updated);
+    if (updated) {
+      localStorage.setItem(`dontAskAgain_task_list_${list.id}`, 'true');
+    } else {
+      localStorage.removeItem(`dontAskAgain_task_list_${list.id}`);
+    }
+  };
+
 
   const handleAddTask = () => {
     if (newTask.trim()) {
@@ -30,7 +50,6 @@ const TodoList = ({
   const toggleCalendar = () => {
     setShowCalendar(prev => !prev);
   };
-
   const totalTasks = list.tasks.length;
   const completedTasks = list.completed
     ? totalTasks
@@ -65,6 +84,15 @@ const TodoList = ({
           </button>
         </div>
       </div>
+      {showTasks && (<label style={{ fontSize: '1rem', display: 'flex', marginTop: '0.5rem',justifyContent:'center',padding:5 }}>
+            Dont ask again to confirm
+            <input
+              type="checkbox"
+              checked={doNotAskTaskDelete}
+              onChange={toggleDoNotAskTaskDelete}
+              style={{ marginLeft: '6px',borderRadius:"25" }}
+            />
+        </label>)}
 
       {showTasks && (
         <div className="list-tasks">

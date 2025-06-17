@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, CheckSquare, List, ChevronDown,CalendarDays } from 'lucide-react';
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css';
@@ -19,6 +19,9 @@ const App = () => {
   const [selectedType, setSelectedType] = useState('task');
   const [inputValue, setInputValue] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  //Search
+  const [searchText,setSearchText] = useState('')
 
   //Dates and Calender
   const [deadline, setDeadline] = useState(null);
@@ -62,6 +65,31 @@ const App = () => {
     }
   }, [lists, isDataLoaded])
 
+  //Search function
+  const filteredTasks = useMemo(() => {
+    if (!searchText.trim()) {
+      return tasks; // Show all tasks when no search text
+    }
+    return tasks.filter(task => 
+      task.text.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }, [tasks, searchText]);
+
+  const filteredLists = useMemo(() => {
+    if (!searchText.trim()) {
+      return lists; // Show all tasks when no search text
+    }
+    return lists.filter(list => {
+      const listNameMatches = list.name.toLowerCase().includes(searchText.toLowerCase());
+      
+      const taskMatches = list.tasks.some(task => 
+        task.text.toLowerCase().includes(searchText.toLowerCase())
+      );
+      
+      return listNameMatches || taskMatches;
+    });
+  }, [lists, searchText]);
+
   // Task functions
   const addTask = (text) => {
     const newTask = {
@@ -72,7 +100,6 @@ const App = () => {
     };
     setTasks((prev) => [...prev, newTask]);
     
-
     setInputValue('');
     setDeadline(null); 
 
@@ -86,8 +113,11 @@ const App = () => {
   };
 
   const deleteTask = (id) => {
-    setTasks(tasks.filter(task => task.id !== id));
-    
+    const targetTask = tasks.find(task => task.id === id)
+    var result = confirm(`Do you want to delete the "${targetTask?.text}" task?`)
+    if(result){
+      setTasks(tasks.filter(task => task.id !== id));
+    }    
   };
 
   const handleSaveNote = (taskId, updatedNote) => {
@@ -118,8 +148,12 @@ const App = () => {
   };
 
   const deleteList = (id) => {
-    setLists(lists.filter(list => list.id !== id));
-    
+    const targetList = lists.find(list => list.id === id)
+    var result = confirm(`Do you want to delete the "${targetList?.name}" list?`)
+
+    if(result){
+      setLists(lists.filter(list => list.id !== id));
+    }
   };
 
   const addTaskToList = (listId, taskText, listTaskDeadline) => {
@@ -152,14 +186,22 @@ const App = () => {
   };
 
   const deleteTaskFromList = (listId, taskId) => {
-    setLists(lists.map(list => 
-      list.id === listId 
-        ? { ...list, tasks: list.tasks.filter(task => task.id !== taskId) }
-        : list
-    ));
-    
+    const dontAsk = localStorage.getItem(`dontAskAgain_task_list_${listId}`) === 'true';
+  
+    const targetList = lists.find(list => list.id === listId);
+    const targetTask = targetList.tasks.find(task => task.id === taskId);
+  
+    if (dontAsk || confirm(`Do you want to delete the "${targetTask?.text}" task?`)) {
+      setLists(prev =>
+        prev.map(list =>
+          list.id === listId
+            ? { ...list, tasks: list.tasks.filter(task => task.id !== taskId) }
+            : list
+        )
+      );
+    }
   };
-
+  
   const handleAdd = () => {
     if (inputValue.trim()) {
       if (selectedType === 'task') {
@@ -171,6 +213,16 @@ const App = () => {
     }
   };
 
+  //Handle Edit Task
+  const handleEditTask = (id, newText) => {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === id ? { ...t, text: newText } : t
+      )
+    );
+  };
+  
+
   const dropdownOptions = [
     { value: 'task', label: 'Task', icon: <CheckSquare size={16} /> },
     { value: 'list', label: 'List', icon: <List size={16} /> }
@@ -180,8 +232,11 @@ const App = () => {
     <div className="app">
       <div className="app-header">
         <h1 className="app-title">Todo App</h1>
+        <div className='search-container'>
+          <input type='text' onChange={(e) => setSearchText(e.target.value)} value={searchText} placeholder='Search...' className='search-input'/>
+        </div>
       </div>
-
+     
       <div className="add-form">
         <div className="dropdown-container">
           <button
@@ -267,37 +322,39 @@ const App = () => {
       </div>
 
       <div className="content-area">
-        {tasks.length > 0 && (
-          <div className="tasks-section">
-            <h2 className="section-title">
-              <CheckSquare size={20} />
-              Tasks ({tasks.filter(t => t.completed).length}/{tasks.length})
-            </h2>
-            <div className="tasks-container">
-              {tasks.map(task => (
-                <Task
-                  key={task.id}
-                  task={task}
-                  onComplete={completeTask}
-                  onDelete={deleteTask}
-                  deadline = {deadline}
-                  onSaveNote={handleSaveNote}
-                />
-              ))}
+        {filteredTasks.length > 0 && (
+            <div className="tasks-section">
+              <h2 className="section-title">
+                <CheckSquare size={20} />
+                Tasks ({tasks.filter(t => t.completed).length}/{tasks.length})
+              </h2>
+              <div className="tasks-container">
+                {[...filteredTasks]
+                  .sort((a, b) => a.completed - b.completed).map(task => (
+                  <Task
+                    key={task.id}
+                    task={task}
+                    onComplete={completeTask}
+                    onDelete={deleteTask}
+                    deadline={deadline}
+                    onSave={handleSaveNote}
+                    onEdit={handleEditTask}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-
+          )}
         {tasks.length > 0 && lists.length > 0 && <div className="separator"></div>}
 
-        {lists.length > 0 && (
+        {filteredLists.length > 0 && (
           <div className="lists-section">
             <h2 className="section-title">
               <List size={20} />
               Lists ({lists.filter(l => l.completed).length}/{lists.length})
             </h2>
             <div className="lists-container">
-              {lists.map(list => (
+              {[...filteredLists]
+                  .sort((a, b) => a.completed - b.completed).map(list => (
                 <TodoList
                   key={list.id}
                   list={list}

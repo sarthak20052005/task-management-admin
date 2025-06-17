@@ -1,0 +1,724 @@
+@import url('https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Host Grotesk';
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  color: #e5e5e5;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+}
+
+.app {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  flex-shrink: 0;
+}
+
+.app-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff 0%, #888888 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.add-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+  align-items: stretch;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 0.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dropdown-container {
+  position: relative;
+  min-width: 120px;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  color: #e5e5e5;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+  width: 100%;
+}
+
+.dropdown-trigger:hover {
+  background: #333333;
+  border-color: #4a4a4a;
+}
+
+.dropdown-trigger.open {
+  border-color: #555555;
+  background: #333333;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: #e5e5e5;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-weight: 500;
+}
+
+.dropdown-option:hover {
+  background: #333333;
+}
+
+.main-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  color: #e5e5e5;
+  font-family: 'Host Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  transition: all 0.2s ease;
+  min-width: 0;
+}
+
+.main-input:focus {
+  outline: none;
+  border-color: #555555;
+  background: #252525;
+}
+
+.main-input::placeholder {
+  color: #888888;
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.add-btn.primary {
+  background: linear-gradient(135deg, #333333 0%, #4a4a4a 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.add-btn.primary:hover {
+  background: linear-gradient(135deg, #404040 0%, #555555 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.add-btn.secondary {
+  background: #2a2a2a;
+  color: #e5e5e5;
+  border: 1px solid #3a3a3a;
+  padding: 0.5rem;
+}
+
+.add-btn.secondary:hover {
+  background: #333333;
+  border-color: #4a4a4a;
+}
+
+.content-area {
+  flex: 1;
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 2rem;
+  min-height: 0;
+  overflow: auto;
+}
+
+.tasks-section,
+.lists-section {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tasks-container,
+.lists-container {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+}
+
+.separator {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, #333333 50%, transparent 100%);
+  margin: 1rem 0;
+}
+
+/* Task Styles */
+.task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.task-item:hover {
+  background: #1f1f1f;
+  border-color: #3a3a3a;
+  /* transform: translateY(-1px); */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.task-item.completed {
+  opacity: 0.6;
+  background: #151515;
+}
+
+.task-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #4a4a4a;
+  border-radius: 25px;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex; 
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checkbox:hover {
+  border-color: #666666;
+  background: #252525;
+}
+
+.checkbox.checked {
+  background: #ff5a23;
+  border-color: #555555;
+  color: #ffffff;
+}
+
+.task-text {
+  color: #e5e5e5;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.5;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.task-text.strikethrough {
+  text-decoration: line-through;
+  color: #888888;
+}
+
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: #666666;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.delete-btn:hover {
+  color: #ff6b6b;
+  background: #2a1a1a;
+}
+
+/* Todo List Styles */
+.todo-list-item {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.todo-list-item:hover {
+  border-color: #3a3a3a;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.todo-list-item.completed {
+  opacity: 0.7;
+  background: #151515;
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  background: #1f1f1f;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.list-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.list-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.01em;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.list-name.strikethrough {
+  text-decoration: line-through;
+  color: #888888;
+}
+
+.task-count {
+  color: #888888;
+  font-weight: 500;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.list-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.toggle-btn {
+  background: transparent;
+  border: 1px solid #3a3a3a;
+  color: #888888;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-btn:hover {
+  color: #e5e5e5;
+  border-color: #4a4a4a;
+  background: #252525;
+}
+
+.list-tasks {
+  padding: 1.5rem;
+  background: #1a1a1a;
+}
+
+.add-task-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.task-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: #252525;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  color: #e5e5e5;
+  font-family: 'Host Grotesk', sans-serif;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  min-width: 0;
+}
+
+.task-input:focus {
+  outline: none;
+  border-color: #4a4a4a;
+  background: #2a2a2a;
+}
+
+.task-input::placeholder {
+  color: #666666;
+}
+
+.empty-state {
+  text-align: center;
+  color: #666666;
+  font-style: italic;
+  padding: 2rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 200px;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333333;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4a4a4a;
+}
+
+/* Focus styles for accessibility */
+*:focus {
+  outline: 2px solid #555555;
+  outline-offset: 2px;
+}
+
+button:focus,
+input:focus {
+  outline: 2px solid #666666;
+  outline-offset: 2px;
+}
+
+/* Tablet Responsive Design */
+@media (max-width: 1024px) {
+  .app {
+    padding: 1.5rem;
+  }
+  
+  .content-area {
+    gap: 1.5rem;
+  }
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+  .app {
+    padding: 1rem;
+  }
+  
+  .content-area {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .tasks-section,
+  .lists-section {
+    width: 100%;
+  }
+  
+  .separator {
+    width: 100%;
+    margin: 1.5rem 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .app {
+    padding: 0.75rem;
+  }
+  
+  .app-title {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .app-header {
+    margin-bottom: 2rem;
+  }
+  
+  .add-form {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .dropdown-container {
+    min-width: auto;
+  }
+  
+  .dropdown-trigger {
+    padding: 0.875rem 1rem;
+  }
+  
+  .main-input {
+    padding: 0.875rem 1rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .add-btn.primary {
+    padding: 0.875rem 1rem;
+    justify-content: center;
+  }
+  
+  .task-item {
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .task-content {
+    gap: 1rem;
+  }
+  
+  .task-text {
+    font-size: 0.95rem;
+  }
+  
+  .list-header {
+    padding: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .list-info {
+    gap: 0.75rem;
+    min-width: 0;
+  }
+  
+  .list-name {
+    font-size: 1.1rem;
+  }
+  
+  .list-tasks {
+    padding: 1rem;
+  }
+  
+  .add-task-form {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .task-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.875rem 1rem;
+  }
+  
+  .add-btn.secondary {
+    padding: 0.875rem 1rem;
+    justify-content: center;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  .empty-state {
+    padding: 1.5rem;
+    font-size: 1rem;
+    min-height: 150px;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .app {
+    padding: 0.5rem;
+  }
+  
+  .add-form {
+    padding: 0.5rem;
+  }
+  
+  .content-area {
+    gap: 0.75rem;
+  }
+  
+  .task-item,
+  .list-header {
+    padding: 0.75rem;
+  }
+  
+  .list-tasks {
+    padding: 0.75rem;
+  }
+}
+
+/* Landscape orientation on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .app-header {
+    margin-bottom: 1rem;
+  }
+  
+  .app-title {
+    font-size: 1.5rem;
+  }
+  
+  .add-form {
+    margin-bottom: 1rem;
+  }
+  
+  .section-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Glassmorphic Calendar Container */
+.react-datepicker {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px;
+  color: #fff;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Header (Month and Year) */
+.react-datepicker__header {
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+}
+
+/* Day Names */
+.react-datepicker__day-name {
+  color: #ffa500; /* orange text */
+}
+
+/* Individual Days */
+.react-datepicker__day {
+  color: #fffcfc;
+  transition: all 0.2s ease;
+}
+
+.react-datepicker__day:hover {
+  background-color: rgba(255, 165, 0, 0.3); /* orange hover */
+  border-radius: 6px;
+}
+
+.react-datepicker__current-month {
+  color: #ffa500;
+}
+
+/* Selected Day */
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: #ffa500 !important; /* orange */
+  color: rgb(255, 255, 255);
+  border-radius: 6px;
+}
+
+/* Today Highlight */
+.react-datepicker__day--today {
+  border: 1px solid #ffa500;
+  border-radius: 6px;
+}
+
+/* Triangle / Arrow */
+.react-datepicker__triangle {
+  display: none;
+}
+
+/* Deadline */
+.deadline-text{
+  color: #ff411f9f;
+}

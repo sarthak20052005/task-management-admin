@@ -1,0 +1,27 @@
+.container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress-container{
+    height: 2px;
+    width: 100%;
+    background-color: #e0e0de;
+    border-radius: 10;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+  
+.filler{
+    height: 100%;
+    background-color: #f0560f;
+    text-align: center;
+    line-height: 25px;
+    transition: width 0.5s ease-in-out;
+}
+
+.label{
+    padding: 5;
+    font-weight: bold;
+}

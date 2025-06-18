@@ -13,13 +13,15 @@ If you are developing a production application, we recommend using TypeScript wi
 
 
 # Features
-- Adding, Deleting, Completing the Task & Checklist
+- Adding, Deletinggi, Completing the Task & Checklist
 - Progress Bar for Checklist
 - Deadlines for Tasks
 - LocalStorage saving
 - Notes For existing Tasks
 - With Dark Mode UI
-
+- Editing
+- Searching
+- 
 
 # Dependencies
 

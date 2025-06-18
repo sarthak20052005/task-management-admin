@@ -96,13 +96,13 @@ const TodoList = ({
 
       {showTasks && (
         <div className="list-tasks">
-          <div className="add-task-form">
+          {/* <div className="add-task-form">
             <input
               type="text"
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleAddTask()}
-              placeholder="Add task to this list..."
+              placeholder="Add task for this list..."
               className="task-input"
             />
             <button
@@ -139,7 +139,7 @@ const TodoList = ({
             <button onClick={handleAddTask} className="add-btn secondary">
               <Plus size={16} />
             </button>
-          </div>
+          </div> */}
 
           <div className="tasks-container">
             {list.tasks.map((task) => (

@@ -330,6 +330,7 @@ body {
 
 .task-content {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
   flex: 1;
@@ -805,4 +806,16 @@ input:focus {
 .deadline-text{
   font-size: small;
   color: #ff411f9f;
+}
+
+/* Priority */
+.priority{
+  width: 75px;
+  padding: 7px;
+  border: 1px solid #404040 ;
+  border-radius: 7px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-right: 20px;
 }

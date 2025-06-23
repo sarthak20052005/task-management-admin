@@ -1,10 +1,14 @@
 import React from 'react'
-import AppAdmin from './Admin UI/AppAdmin'
+import DatabaseLearning from './Admin UI/DatabaseLearning'
+import UserDashboard from './Admin UI/Component/UserDashboard'
+import AppAdmim from '../src/Admin UI/AppAdmin'
 
 const App = () => {
   return (
     <div>
-        <AppAdmin/>
+      <AppAdmim/>
+        {/* <DatabaseLearning/> */}
+        {/* <UserDashboard/> */}
     </div>
   )
 }

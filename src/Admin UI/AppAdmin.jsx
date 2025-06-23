@@ -1,23 +1,29 @@
-import React, { useState, useMemo } from 'react';
-import { Plus, CheckSquare, List, ChevronDown, CalendarDays, User } from 'lucide-react';
+import React, { useState,useEffect ,useMemo } from 'react';
+import { Plus, CheckSquare, List, ChevronDown, CalendarDays, User, Flag } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
 // Components
 import TodoList from './Component/TodoList';
 import CustomDropdown from './Component/CustomDropDown';
+import { GrainOverlay, GrainContainer } from './GrainOverlay01';
 
 // CSS
 import './App.css';
+import UserDashboard from './Component/UserDashboard';
+
+//DataBase
+import { collection, addDoc, setDoc,doc,deleteDoc } from "firebase/firestore";
+import { db } from "../firebase";
 
 const App = () => {
   const initialUsers = [
-    { id: 1, name: 'Harmish', tasks: [], completed: false },
-    { id: 2, name: 'Aarush', tasks: [], completed: false },
-    { id: 3, name: 'Animesh', tasks: [], completed: false },
-    { id: 4, name: 'Ayush', tasks: [], completed: false },
-    { id: 5, name: 'Sarthak', tasks: [], completed: false },
-    { id: 6, name: 'Mansi', tasks: [], completed: false },
+    { id: 1, name: 'Harmish', tasks: [], completed: false, visible: true },
+    { id: 2, name: 'Aarush', tasks: [], completed: false, visible: true },
+    { id: 3, name: 'Animesh', tasks: [], completed: false , visible: true},
+    { id: 4, name: 'Ayush', tasks: [], completed: false, visible: true },
+    { id: 5, name: 'Sarthak', tasks: [], completed: false , visible: true},
+    { id: 6, name: 'Mansi', tasks: [], completed: false, visible: true },
   ];
 
   const [lists, setLists] = useState(initialUsers);
@@ -25,19 +31,79 @@ const App = () => {
   const [inputValue, setInputValue] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState('');
-  const [selectedPriority, setSelectedPriority] = useState('medium');
+  const [selectedPriority, setSelectedPriority] = useState('mid');
   const [searchText, setSearchText] = useState('');
   const [deadline, setDeadline] = useState(null);
   const [showCalendar, setShowCalendar] = useState(false);
 
+  const [editingTaskInfo, setEditingTaskInfo] = useState(null); 
+  const [editingText, setEditingText] = useState('');
+
+  const today = new Date();
+  const formattedDate = today.toISOString().split('T')[0];
+
   const toggleCalendar = () => {
     setShowCalendar(prev => !prev);
+  };
+  
+  // Fixed handleEditTask function
+  const handleEditTask = (listId, task) => {
+    setEditingTaskInfo({ listId, taskId: task.id });
+    setEditingText(task.text);
+  };
+  
+  // Fixed handleSaveEdit function
+  const handleSaveEdit = async () => {
+    if (!editingText.trim()) return;
+  
+    const updatedLists = lists.map((list) => {
+      if (list.id === editingTaskInfo.listId) {
+        return {
+          ...list,
+          tasks: list.tasks.map((task) =>
+            task.id === editingTaskInfo.taskId
+              ? { ...task, text: editingText }
+              : task
+          ),
+        };
+      }
+      return list;
+    });
+  
+    setLists(updatedLists);
+    
+    // Update Firebase
+    const updatedUser = updatedLists.find(user => user.id === editingTaskInfo.listId);
+    if (updatedUser) {
+      try {
+        const userRef = doc(db, "users", String(updatedUser.name));
+        await setDoc(userRef, {
+          id: updatedUser.id,
+          name: updatedUser.name,
+          tasks: updatedUser.tasks,
+          completed: updatedUser.completed,
+          notes: updatedUser.notes || '',
+        });
+        console.log("Task updated successfully in Firebase");
+      } catch (error) {
+        console.error("Error updating task in Firebase:", error);
+      }
+    }
+    
+    setEditingTaskInfo(null);
+    setEditingText('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTaskInfo(null);
+    setEditingText('');
   };
 
   const filteredLists = useMemo(() => {
     return lists.filter(
       list =>
-        list.tasks.length > 0 &&
+        list.tasks?.length > 0 &&
+        list.visible !== false &&
         (
           list.name.toLowerCase().includes(searchText.toLowerCase()) ||
           list.tasks.some(task =>
@@ -48,15 +114,19 @@ const App = () => {
   }, [lists, searchText]);
 
   const completeList = (id) => {
-    setLists(lists.map(list =>
-      list.id === id ? { ...list, completed: !list.completed } : list
-    ));
+
+    const updatedLists = lists.map(list => list.id === id ? { ...list, completed: !list.completed } : list)
+
+    setLists(updatedLists);
+
   };
 
   const deleteList = (id) => {
     const targetList = lists.find(list => list.id === id);
     if (confirm(`Do you want to delete the "${targetList?.name}" user?`)) {
-      setLists(lists.filter(list => list.id !== id));
+      const updatedLists = lists.map(list => list.id === id ? {...list, tasks:[], visible:false}: list);
+      
+      setLists(updatedLists);
     }
   };
 
@@ -73,18 +143,18 @@ const App = () => {
     ));
   };
 
-  const deleteTaskFromList = (listId, taskId) => {
+  const deleteTaskFromList = (listId, taskId, doNotAskTaskDelete) => {
     const targetList = lists.find(list => list.id === listId);
     const targetTask = targetList.tasks.find(task => task.id === taskId);
-
-    if (confirm(`Do you want to delete the "${targetTask?.text}" task?`)) {
-      setLists(prev =>
-        prev.map(list =>
-          list.id === listId
-            ? { ...list, tasks: list.tasks.filter(task => task.id !== taskId) }
-            : list
-        )
+  
+    if (doNotAskTaskDelete || window.confirm(`Do you want to delete the "${targetTask?.text}" task?`)) {
+      const updatedTasks = targetList.tasks.filter(task => task.id !== taskId);
+  
+      // Update local state
+      const updatedLists = lists.map(list =>
+        list.id === listId ? { ...list, tasks: updatedTasks } : list
       );
+      setLists(updatedLists);
     }
   };
 
@@ -95,21 +165,43 @@ const App = () => {
       id: Date.now(),
       text: inputValue.trim(),
       completed: false,
-      deadline: deadline || null,
-      //priority: selectedPriority
+      deadline: deadline || formattedDate,
+      priority: selectedPriority,
+      notes:''
     };
 
-    setLists(prev =>
-      prev.map(user =>
+    const updatedLists = lists.map(user =>
         user.id === selectedUser
-          ? { ...user, tasks: [...user.tasks, newTask] }
+          ? { ...user, visible: true ,tasks: [...user.tasks, newTask] }
           : user
-      )
     );
 
+    setLists(updatedLists);
+
+    const updatedUser = updatedLists.find(user => user.id === selectedUser);
+
+    //Database Integration (ADDITION)
+    const uploadToFirebase = async () => {
+      try {
+          const userRef = doc(db, "users", String(updatedUser.name)); 
+          await setDoc(userRef , {
+          id : updatedUser.id,
+          name: updatedUser.name,
+          tasks : updatedUser.tasks,
+          completed : updatedUser.completed,
+          notes: updatedUser.notes || '',
+        });
+        
+        console.log("Document written with ID: ", userRef.id);
+      } catch (e) {
+        console.error("Error adding document: ", e);
+      }
+    }
+
+    uploadToFirebase();
     setInputValue('');
     setDeadline(null);
-    //setSelectedPriority('medium');
+    setSelectedPriority('mid');
   };
 
   const userOptions = lists.map((user) => ({
@@ -117,6 +209,12 @@ const App = () => {
     label: user.name,
     icon: <User size={16} />,
   }));
+
+  const priorityOptions = [
+      { value: 'high', label: 'High Priority', icon: <Flag size={16} color="#ff4444" /> },
+      { value: 'mid', label: 'Medium Priority', icon: <Flag size={16} color="#ffaa44" /> },
+      { value: 'low', label: 'Low Priority', icon: <Flag size={16} color="#44ff44" /> }
+    ];
 
   return (
     <div className="app">
@@ -149,6 +247,13 @@ const App = () => {
           setSelectedValue={setSelectedUser}
           placeholder="Select User"
         />
+
+        <CustomDropdown
+          options={priorityOptions}
+          selectedValue={selectedPriority}
+          setSelectedValue={setSelectedPriority}
+          placeholder="Select Priority"
+        /> 
 
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <button
@@ -214,6 +319,12 @@ const App = () => {
                     onAddTask={() => {}}
                     onCompleteTask={completeTaskInList}
                     onDeleteTask={deleteTaskFromList}
+                    editingTaskInfo={editingTaskInfo}
+                    editingText={editingText}
+                    setEditingText={setEditingText}
+                    onEditTask={handleEditTask}
+                    onSaveEdit={handleSaveEdit}
+                    onCancelEdit={handleCancelEdit}
                   />
                 ))}
             </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Plus, Check, Trash2, List } from "lucide-react";
 import Task from "./Task";
 import ProgressBar from "./ProgressBar";
@@ -13,7 +13,13 @@ const TodoList = ({
   onAddTask,
   onCompleteTask,
   onDeleteTask,
-  onDeleteTaskAgain
+  selectedPriority,
+  editingTaskInfo,
+  editingText,
+  setEditingText,
+  onEditTask,
+  onSaveEdit,
+  onCancelEdit,
 }) => {
   const [newTask, setNewTask] = useState("");
   const [showTasks, setShowTasks] = useState(false);
@@ -21,6 +27,19 @@ const TodoList = ({
   const [showCalendar, setShowCalendar] = useState(false);
   const [deadline, setDeadline] = useState(null);
   const [doNotAskTaskDelete, setDoNotAskTaskDelete] = useState(false);
+
+  const priorityOrder = {
+    low: 3,
+    mid: 2,
+    high: 1,
+  };
+
+  const sortedTasks = useMemo(() => {
+    return [...list.tasks].sort(
+      (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
+    );
+  }, [list.tasks]);
+  
 
   useEffect(() => {
     const saved = localStorage.getItem(`dontAskAgain_task_list_${list.id}`);
@@ -39,7 +58,6 @@ const TodoList = ({
     }
   };
 
-
   const handleAddTask = () => {
     if (newTask.trim()) {
       onAddTask(list.id, newTask.trim(),deadline);
@@ -50,6 +68,17 @@ const TodoList = ({
   const toggleCalendar = () => {
     setShowCalendar(prev => !prev);
   };
+
+  // Fixed edit function
+  const handleEditTaskText = (listId, taskId, newText) => {
+    // This function is now handled by the parent component
+    // Just trigger the edit mode
+    const task = list.tasks.find(t => t.id === taskId);
+    if (task && onEditTask) {
+      onEditTask(listId, task);
+    }
+  };
+
   const totalTasks = list.tasks.length;
   const completedTasks = list.completed
     ? totalTasks
@@ -84,70 +113,35 @@ const TodoList = ({
           </button>
         </div>
       </div>
-      {showTasks && (<label style={{ fontSize: '1rem', display: 'flex', marginTop: '0.5rem',justifyContent:'center',padding:5 }}>
-            Dont ask again to confirm
-            <input
-              type="checkbox"
-              checked={doNotAskTaskDelete}
-              onChange={toggleDoNotAskTaskDelete}
-              style={{ marginLeft: '6px',borderRadius:"25" }}
-            />
-        </label>)}
+      {showTasks && (
+        <label style={{ fontSize: '1rem', display: 'flex', marginTop: '0.5rem',justifyContent:'center',padding:5 }}>
+          Dont ask again to confirm
+          <input
+            type="checkbox"
+            checked={doNotAskTaskDelete}
+            onChange={toggleDoNotAskTaskDelete}
+            style={{ marginLeft: '6px',borderRadius:"25" }}
+          />
+        </label>
+      )}
 
       {showTasks && (
         <div className="list-tasks">
-          {/* <div className="add-task-form">
-            <input
-              type="text"
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleAddTask()}
-              placeholder="Add task for this list..."
-              className="task-input"
-            />
-            <button
-              onClick={toggleCalendar}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-              }}
-              title="Pick deadline"
-            >
-              <CalendarDays size={24} />
-            </button>
-            {showCalendar && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "35px",
-                  zIndex: 100,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                }}
-              >
-                <DatePicker
-                  selected={deadline}
-                  onChange={(date) => {
-                    setDeadline(date);
-                    setShowCalendar(false);
-                  }}
-                  inline // shows it as a block calendar
-                  minDate={new Date()}
-                />
-              </div>
-            )}
-            <button onClick={handleAddTask} className="add-btn secondary">
-              <Plus size={16} />
-            </button>
-          </div> */}
-
           <div className="tasks-container">
-            {list.tasks.map((task) => (
+            {sortedTasks.map((task) => (
               <Task
                 key={task.id}
                 task={task}
                 onComplete={(taskId) => onCompleteTask(list.id, taskId)}
-                onDelete={(taskId) => onDeleteTask(list.id, taskId)}
+                onDelete={(taskId) => onDeleteTask(list.id, taskId, doNotAskTaskDelete)}
+                priority={task.priority}
+                onEdit={() => handleEditTaskText(list.id, task.id)} 
+                doNotAskTaskDelete={doNotAskTaskDelete}
+                isEditing={editingTaskInfo?.listId === list.id && editingTaskInfo?.taskId === task.id}
+                editingText={editingText}
+                setEditingText={setEditingText}
+                onSaveEdit={onSaveEdit}
+                onCancelEdit={onCancelEdit}
               />
             ))}
             {list.tasks.length === 0 && (

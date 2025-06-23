@@ -1,5 +1,5 @@
 import React from 'react';
-import './Notes.css';
+import './Comp Css/Notes.css';
 
 const Notes = ({ noteText, onChange, onClose, onSave }) => {
   return (

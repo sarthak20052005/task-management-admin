@@ -1,53 +1,94 @@
 import React, { useState } from 'react';
-import { Check, Trash2, StickyNote, Pencil, X, Save } from 'lucide-react';
+import { Check, Trash2, StickyNote, Pencil, X, Save, Flag } from 'lucide-react';
 
 // Components
 import Notes from './Notes';
 
-const Task = ({ task, onComplete, onDelete, onSave, onEdit }) => {
+const Task = ({ 
+  task, 
+  onComplete, 
+  onDelete, 
+  onSave, 
+  onEdit, 
+  priority,
+  isEditing,
+  editingText,
+  setEditingText,
+  onSaveEdit,
+  onCancelEdit
+}) => {
   const [showNotes, setShowNotes] = useState(false);
   const [notesText, setNotesText] = useState(task.note || '');
-  const [isEdit, setIsEdit] = useState(false);
-  const [editedTask, setEditedTask] = useState(task.text || '');
-
+  
   const handleSaveNote = () => {
     onSave(task.id, notesText);
     setShowNotes(false);
   };
 
   const handleEditTask = () => {
-    if (editedTask.trim()) {
-      onEdit(task.id, editedTask.trim());
-      setIsEdit(false);
+    if (onEdit) {
+      onEdit(); 
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (onSaveEdit) {
+      onSaveEdit(); 
+    }
+  };
+
+  const handleCancelEdit = () => {
+    if (onCancelEdit) {
+      onCancelEdit(); 
     }
   };
 
   return (
-    <div className={`task-item ${task.completed ? 'completed' : ''}`}>
+    <div className={`task-item ${task.completed ? 'completed' : ''}`} style={{borderBottomColor: priority === 'low' ? "#44ff44" : priority === 'mid' ? '#ffd528' :'#ff4444'}}>
       <div className="task-content">
-        <button
-          onClick={() => onComplete(task.id)}
-          className={`checkbox ${task.completed ? 'checked' : ''}`}
-        >
-          {task.completed && <Check size={12} />}
-        </button>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <button
+            onClick={() => onComplete(task.id)}
+            className={`checkbox ${task.completed ? 'checked' : ''}`}
+          >
+            {task.completed && <Check size={12} />}
+          </button>
 
-        <div className="content">
-          {isEdit ? (
-            <input
-              type="text"
-              value={editedTask}
-              onChange={(e) => setEditedTask(e.target.value)}
-              className="edit-input"
-            />
-          ) : (
-            <div className={`task-text ${task.completed ? 'strikethrough' : ''}`}>
-              {task.text}
+          <div className="content">
+            {isEditing ? (
+              <input
+                type="text"
+                value={editingText}
+                onChange={(e) => setEditingText(e.target.value)}
+                className="edit-input"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSaveEdit();
+                  } else if (e.key === 'Escape') {
+                    handleCancelEdit();
+                  }
+                }}
+                autoFocus
+              />
+            ) : (
+              <div className={`task-text ${task.completed ? 'strikethrough' : ''}`}>
+                {task.text}
+              </div>
+            )}
+            <div className="deadline-text">
+              Deadline: {new Date(task.deadline).toLocaleDateString()}
             </div>
-          )}
-          <div className="deadline-text">
-            Deadline: {new Date(task.deadline).toLocaleDateString()}
           </div>
+        </div>
+        <div className='priority'>
+          {(priority === "low") ? (
+            <Flag size={16} color="#44ff44" />
+          ): (priority === "mid") ? (
+            <Flag size={16} color="#ffaa44" />
+          ):(
+            <Flag size={16} color="#ff4444" />
+          )}
+          <span>{priority}</span>
         </div>
       </div>
 
@@ -55,17 +96,17 @@ const Task = ({ task, onComplete, onDelete, onSave, onEdit }) => {
         <StickyNote size={16} />
       </button>
 
-      {isEdit ? (
+      {isEditing ? (
         <>
-          <button onClick={handleEditTask}>
+          <button onClick={handleSaveEdit} title="Save changes">
             <Save size={16} />
           </button>
-          <button onClick={() => setIsEdit(false)}>
+          <button onClick={handleCancelEdit} title="Cancel editing">
             <X size={16} />
           </button>
         </>
       ) : (
-        <button onClick={() => setIsEdit(true)}>
+        <button onClick={handleEditTask} title="Edit task">
           <Pencil size={16} />
         </button>
       )}

@@ -76,7 +76,7 @@ const Task = ({
               </div>
             )}
             <div className="deadline-text">
-              Deadline: {new Date(task.deadline).toLocaleString()}
+              Deadline: {new Date(task.deadline).toLocaleDateString()}
             </div>
           </div>
         </div>

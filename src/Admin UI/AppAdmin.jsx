@@ -33,6 +33,10 @@ const App = () => {
   const [selectedPriority, setSelectedPriority] = useState('mid');
   const [searchText, setSearchText] = useState('');
   const [deadline, setDeadline] = useState(null);
+  const [selectedTime, setSelectedTime] = useState('12:00'); // Default time
+  const [sublistDeadline, setSublistDeadline] = useState(null);
+  const [sublistTime, setSublistTime] = useState("12:00");
+  const [showSublistCalendar, setShowSublistCalendar] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [editingTaskInfo, setEditingTaskInfo] = useState(null);
   const [editingText, setEditingText] = useState('');
@@ -41,6 +45,14 @@ const App = () => {
   const formattedDate = today.toISOString().split('T')[0];
 
   const toggleCalendar = () => setShowCalendar(prev => !prev);
+
+  const combineDateAndTime = (date, timeStr) => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    const newDate = new Date(date);
+    newDate.setHours(hours, minutes, 0, 0);
+    return newDate.toISOString(); // Store in ISO format
+  };
+
 
   const handleEditTask = (listId, task, sublistId = null) => {
     setEditingTaskInfo({ listId, taskId: task.id, sublistId });
@@ -60,13 +72,13 @@ const App = () => {
           lists: list.lists.map((sublist) =>
             sublist.id === editingTaskInfo.sublistId
               ? {
-                  ...sublist,
-                  task: sublist.task.map((task) =>
-                    task.id === editingTaskInfo.taskId
-                      ? { ...task, text: editingText }
-                      : task
-                  ),
-                }
+                ...sublist,
+                task: sublist.task.map((task) =>
+                  task.id === editingTaskInfo.taskId
+                    ? { ...task, text: editingText }
+                    : task
+                ),
+              }
               : sublist
           ),
         };
@@ -150,11 +162,11 @@ const App = () => {
     setLists(lists.map(list =>
       list.id === listId
         ? {
-            ...list,
-            tasks: list.tasks.map(task =>
-              task.id === taskId ? { ...task, completed: !task.completed } : task
-            )
-          }
+          ...list,
+          tasks: list.tasks.map(task =>
+            task.id === taskId ? { ...task, completed: !task.completed } : task
+          )
+        }
         : list
     ));
   };
@@ -225,35 +237,37 @@ const App = () => {
   };
 
   const handleAddTaskToSublist = (userId, sublistId, taskText, taskDeadline, taskPriority) => {
-    const updatedLists = lists.map(user => {
-      if (user.id !== userId) return user;
-  
-      const updatedSublists = user.lists.map(sublist => {
-        if (sublist.id !== sublistId) return sublist;
-  
-        const newTask = {
-          id: Date.now(),
-          text: taskText,
-          deadline: taskDeadline || today,
-          completed: false,
-          priority: taskPriority,
-          notes: ''
-        };
-  
-        return {
-          ...sublist,
-          task: [...(sublist.task || []), newTask]
-        };
-      });
-  
+  const combinedDeadline = combineDateAndTime(taskDeadline || new Date(), sublistTime);
+  const updatedLists = lists.map(user => {
+    if (user.id !== userId) return user;
+
+    const updatedSublists = user.lists.map(sublist => {
+      if (sublist.id !== sublistId) return sublist;
+
+      const newTask = {
+        id: Date.now(),
+        text: taskText,
+        deadline: combinedDeadline,
+        completed: false,
+        priority: taskPriority,
+        notes: ''
+      };
+
       return {
-        ...user,
-        lists: updatedSublists
+        ...sublist,
+        task: [...(sublist.task || []), newTask]
       };
     });
-  
-    setLists(updatedLists);
-  };
+
+    return {
+      ...user,
+      lists: updatedSublists
+    };
+  });
+
+  setLists(updatedLists);
+};
+
 
   const handleAdd = () => {
     if (!inputValue.trim() || !selectedUser) return;
@@ -266,7 +280,7 @@ const App = () => {
           id: Date.now(),
           text: inputValue.trim(),
           completed: false,
-          deadline: deadline || formattedDate,
+          deadline: combineDateAndTime(deadline || new Date(), selectedTime),
           priority: selectedPriority,
           notes: ''
         };
@@ -394,21 +408,29 @@ const App = () => {
           </button>
 
           {showCalendar && (
-            <div style={{
-              position: 'absolute',
-              top: '35px',
-              zIndex: 100,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-            }}>
+            <div className="calendar-dropdown">
               <DatePicker
                 selected={deadline}
-                onChange={(date) => {
-                  setDeadline(date);
-                  setShowCalendar(false);
-                }}
+                onChange={(date) => setDeadline(date)}
                 inline
                 minDate={new Date()}
               />
+              <div style={{ marginTop: '10px' }}>
+                <label style={{ color: '#e5e5e5', marginBottom: '4px', display: 'block' }}>Set Time:</label>
+                <input
+                  type="time"
+                  value={selectedTime}
+                  onChange={(e) => setSelectedTime(e.target.value)}
+                  className="time-input"
+                />
+                <button
+                  onClick={() => setShowCalendar(false)}
+                  className="add-btn secondary"
+                  style={{ marginTop: '10px', width: '100%' }}
+                >
+                  Set
+                </button>
+              </div>
             </div>
           )}
         </div>

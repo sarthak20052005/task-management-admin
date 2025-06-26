@@ -283,6 +283,7 @@ body {
   padding-right: 0.5rem;
   /* Fixed: Ensure horizontal overflow is visible for dropdowns */
   overflow-x: visible;
+  overflow: visible !important;
 }
 
 .section-title {
@@ -400,7 +401,7 @@ body {
   border: 1px solid #2a2a2a;
   border-radius: 12px;
   margin-bottom: 1rem;
-  overflow: hidden;
+  overflow: visible !important;
   transition: all 0.2s ease;
 }
 
@@ -482,7 +483,7 @@ body {
   padding: 1.5rem;
   background: #1a1a1a;
   /* Fixed: Ensure task-level dropdowns aren't clipped */
-  overflow: visible;
+  overflow: visible !important;
 }
 
 .add-task-form {
@@ -848,6 +849,8 @@ input:focus {
   margin-bottom: 0.5rem;
   border-radius: 5px;
   background: #1e1e1e;
+  position: relative;
+  overflow: visible;
 }
 
 .sublist-name {
@@ -864,3 +867,34 @@ input:focus {
   font-size: 0.85rem;
   color: #aaa;
 }
+
+.time-input {
+  background: #252525;
+  border: 1px solid #3a3a3a;
+  color: #e5e5e5;
+  padding: 0.5rem;
+  border-radius: 6px;
+  width: 100%;
+  font-family: 'Host Grotesk', sans-serif;
+}
+
+.time-input:focus {
+  outline: none;
+  background: #2a2a2a;
+  border-color: #555;
+}
+
+.calendar-dropdown {
+  position: absolute;
+  top: 35px;
+  right: 0;
+  z-index: 1000;
+  background: #1a1a1a;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+

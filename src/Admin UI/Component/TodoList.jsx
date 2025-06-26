@@ -27,10 +27,11 @@ const TodoList = ({
 }) => {
   const [newTask, setNewTask] = useState("");
   const [showTasks, setShowTasks] = useState(false);
-  const [showSubTasks,setShowSubTasks] = useState(false);
+  const [showSubTasks, setShowSubTasks] = useState(false);
   const [complete, setComeplete] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [deadline, setDeadline] = useState(null);
+  const [selectedTime, setSelectedTime] = useState("12:00");
   const [doNotAskTaskDelete, setDoNotAskTaskDelete] = useState(false);
   const [sublistInputs, setSublistInputs] = useState({});
   const [selectedPriority, setSelectedPriority] = useState('mid');
@@ -197,168 +198,181 @@ const TodoList = ({
           {list.lists && list.lists.length > 0 && (
             <div className="sublists-section">
               <div className="sublists-section-02">
-              <h4 className="sublist-title">📂 Sub Lists</h4>
-              {list.lists.map((subList) => (
-                <div key={subList.id} className="sublist-card">
-                  <p className="sublist-name">
-                    <strong>{subList.name}</strong>
-                  </p>
+                <h4 className="sublist-title">📂 Sub Lists</h4>
+                {list.lists.map((subList) => (
+                  <div key={subList.id} className="sublist-card">
+                    <p className="sublist-name">
+                      <strong>{subList.name}</strong>
+                    </p>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "6px",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    <input
-                      type="text"
-                      className="sublist-input"
-                      placeholder="Add task to sublist"
-                      value={sublistInputs[subList.id] || ""}
-                      onChange={(e) =>
-                        handleSublistInputChange(subList.id, e.target.value)
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSublistTaskAdd(subList.id);
-                      }}
-                      style={{
-                        flex: 1,
-                        padding: "4px 6px",
-                        borderRadius: "4px",
-                        border: "1px solid #ccc",
-                      }}
-                    />
-                    <CustomDropdown
-                      options={priorityOptions}
-                      selectedValue={selectedPriority}
-                      setSelectedValue={setSelectedPriority}
-                      placeholder="Priority"
-                    />
-                    <button
-                      onClick={() => setShowSubTasks(!showSubTasks)}
-                      className="toggle-btn"
-                    >
-                      <List size={16} />
-                    </button>
                     <div
-                      style={{ display: "inline-block" , zIndex:999}}
+                      style={{
+                        display: "flex",
+                        gap: "6px",
+                        marginBottom: "0.5rem",
+                      }}
                     >
-                      <button
-                        onClick={toggleCalendar}
+                      <input
+                        type="text"
+                        className="sublist-input"
+                        placeholder="Add task to sublist"
+                        value={sublistInputs[subList.id] || ""}
+                        onChange={(e) =>
+                          handleSublistInputChange(subList.id, e.target.value)
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSublistTaskAdd(subList.id);
+                        }}
                         style={{
-                          background: "none",
+                          flex: 1,
+                          padding: "4px 6px",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                      <CustomDropdown
+                        options={priorityOptions}
+                        selectedValue={selectedPriority}
+                        setSelectedValue={setSelectedPriority}
+                        placeholder="Priority"
+                      />
+                      <button
+                        onClick={() => setShowSubTasks(!showSubTasks)}
+                        className="toggle-btn"
+                      >
+                        <List size={16} />
+                      </button>
+                      <div style={{ position: "relative", display: "inline-block", zIndex: 999 }}>
+                        <button
+                          onClick={() => setShowCalendar((prev) => !prev)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                          }}
+                          title="Pick deadline"
+                        >
+                          <CalendarDays size={24} />
+                        </button>
+
+                        {showCalendar && (
+                          <div className="calendar-dropdown">
+                            <DatePicker
+                              selected={deadline}
+                              onChange={(date) => setDeadline(date)}
+                              inline
+                              minDate={new Date()}
+                            />
+                            <div style={{ marginTop: "10px" }}>
+                              <label
+                                style={{
+                                  color: "#e5e5e5",
+                                  marginBottom: "4px",
+                                  display: "block",
+                                }}
+                              >
+                                Set Time:
+                              </label>
+                              <input
+                                type="time"
+                                value={selectedTime}
+                                onChange={(e) => setSelectedTime(e.target.value)}
+                                className="time-input"
+                              />
+                              <button
+                                onClick={() => setShowCalendar(false)}
+                                className="add-btn secondary"
+                                style={{ marginTop: "10px", width: "100%" }}
+                              >
+                                Set
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => handleSublistTaskAdd(subList.id)}
+                        style={{
+                          padding: "4px 10px",
                           border: "none",
+                          background: "#4CAF50",
+                          color: "white",
+                          borderRadius: "4px",
                           cursor: "pointer",
                         }}
-                        title="Pick deadline"
                       >
-                        <CalendarDays size={24} />
+                        Add
                       </button>
-
-                      {showCalendar && (
-                        <div
-                          style={{
-                            position: "absolute",
-                            top: "35px",
-                            zIndex: 100,
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                          }}
-                        >
-                          <DatePicker
-                            selected={deadline}
-                            onChange={(date) => {
-                              setDeadline(date);
-                              setShowCalendar(false);
-                            }}
-                            inline
-                            minDate={new Date()}
-                          />
-                        </div>
-                      )}
                     </div>
-                    <button
-                      onClick={() => handleSublistTaskAdd(subList.id)}
-                      style={{
-                        padding: "4px 10px",
-                        border: "none",
-                        background: "#4CAF50",
-                        color: "white",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Add
-                    </button>
-                  </div>
 
-                 { showSubTasks && (<div className="sublist-tasks">
-                    {subList.task && subList.task.length > 0 ? (
-                      subList.task
-                        .sort(
-                          (a, b) =>
-                            priorityOrder[a.priority] -
-                            priorityOrder[b.priority]
-                        )
-                        .map((task) => (
-                          <Task
-                            key={task.id}
-                            task={task}
-                            onComplete={(taskId) =>
-                              onCompleteSublistTask
-                                ? onCompleteSublistTask(
+                    {showSubTasks && (<div className="sublist-tasks">
+                      {subList.task && subList.task.length > 0 ? (
+                        subList.task
+                          .sort(
+                            (a, b) =>
+                              priorityOrder[a.priority] -
+                              priorityOrder[b.priority]
+                          )
+                          .map((task) => (
+                            <Task
+                              key={task.id}
+                              task={task}
+                              onComplete={(taskId) =>
+                                onCompleteSublistTask
+                                  ? onCompleteSublistTask(
                                     list.id,
                                     subList.id,
                                     taskId
                                   )
-                                : console.log(
+                                  : console.log(
                                     "onCompleteSublistTask not provided"
                                   )
-                            }
-                            onDelete={(taskId) =>
-                              onDeleteSublistTask
-                                ? onDeleteSublistTask(
+                              }
+                              onDelete={(taskId) =>
+                                onDeleteSublistTask
+                                  ? onDeleteSublistTask(
                                     list.id,
                                     subList.id,
                                     taskId,
                                     doNotAskTaskDelete
                                   )
-                                : console.log(
+                                  : console.log(
                                     "onDeleteSublistTask not provided"
                                   )
-                            }
-                            priority={task.priority}
-                            onEdit={() =>
-                              handleEditSublistTask(subList.id, task.id)
-                            }
-                            doNotAskTaskDelete={doNotAskTaskDelete}
-                            isEditing={
-                              editingTaskInfo?.listId === list.id &&
-                              editingTaskInfo?.taskId === task.id &&
-                              editingTaskInfo?.sublistId === subList.id
-                            }
+                              }
+                              priority={task.priority}
+                              onEdit={() =>
+                                handleEditSublistTask(subList.id, task.id)
+                              }
+                              doNotAskTaskDelete={doNotAskTaskDelete}
+                              isEditing={
+                                editingTaskInfo?.listId === list.id &&
+                                editingTaskInfo?.taskId === task.id &&
+                                editingTaskInfo?.sublistId === subList.id
+                              }
 
-                            editingText={editingText}
-                            setEditingText={setEditingText}
-                            onSaveEdit={onSaveEdit}
-                            onCancelEdit={onCancelEdit}
-                          />
-                        ))
-                    ) : (
-                      <p
-                        style={{
-                          fontSize: "0.9rem",
-                          color: "#888",
-                          fontStyle: "italic",
-                          margin: "0.5rem 0",
-                        }}
-                      >
-                        No tasks in this sublist yet.
-                      </p>
-                    )}
-                  </div>)}
-                </div>
-              ))}
+                              editingText={editingText}
+                              setEditingText={setEditingText}
+                              onSaveEdit={onSaveEdit}
+                              onCancelEdit={onCancelEdit}
+                            />
+                          ))
+                      ) : (
+                        <p
+                          style={{
+                            fontSize: "0.9rem",
+                            color: "#888",
+                            fontStyle: "italic",
+                            margin: "0.5rem 0",
+                          }}
+                        >
+                          No tasks in this sublist yet.
+                        </p>
+                      )}
+                    </div>)}
+                  </div>
+                ))}
               </div>
             </div>
           )}

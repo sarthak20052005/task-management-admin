@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import './Comp Css/CustomDropDown.css';
 
-const CustomDropdown = ({ options, selectedValue, setSelectedValue }) => {
+const CustomDropdown = ({ options, selectedValue, setSelectedValue, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   
   const selectedOption = options.find((opt) => opt.value === selectedValue);
@@ -16,7 +16,7 @@ const CustomDropdown = ({ options, selectedValue, setSelectedValue }) => {
       >
         <span className="selected-label">
           {selectedOption?.icon}
-          {selectedOption?.label}
+          {selectedOption ? selectedOption.label: placeholder}
         </span>
         <ChevronDown
           size={16}

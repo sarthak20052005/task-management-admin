@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, CheckSquare, List, CalendarDays, User, Flag } from 'lucide-react';
+import { Plus, CheckSquare, List, CalendarDays, User, Flag, Clock } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -33,6 +33,7 @@ const App = () => {
   const [selectedPriority, setSelectedPriority] = useState('mid');
   const [searchText, setSearchText] = useState('');
   const [deadline, setDeadline] = useState(null);
+  const [deadlineTime, setDeadlineTime] = useState('11:59 PM');
   const [showCalendar, setShowCalendar] = useState(false);
   const [editingTaskInfo, setEditingTaskInfo] = useState(null);
   const [editingText, setEditingText] = useState('');
@@ -40,7 +41,70 @@ const App = () => {
   const today = new Date();
   const formattedDate = today.toISOString().split('T')[0];
 
+  const convertTo24Hour = (time12h) => {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') {
+      hours = '00';
+    }
+    if (modifier === 'PM') {
+      hours = parseInt(hours, 10) + 12;
+    }
+    return `${hours.toString().padStart(2, '0')}:${minutes}`;
+  };
+
+  const convertTo12Hour = (time24h) => {
+    if (!time24h) return '11:59 PM';
+    const [hours, minutes] = time24h.split(':');
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
+  // Generate 12-hour time options for dropdown
+  const generateTimeOptions = () => {
+    const times = [];
+    for (let hour = 1; hour <= 12; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        const minuteStr = minute.toString().padStart(2, '0');
+        const amTime = `${hour}:${minuteStr} AM`;
+        const pmTime = `${hour}:${minuteStr} PM`;
+
+        times.push({
+          value: amTime,
+          label: amTime,
+          icon: <Clock size={16} />
+        });
+
+        if (hour !== 12 || minute !== 45) { // Don't duplicate 12:45 PM
+          times.push({
+            value: pmTime,
+            label: pmTime,
+            icon: <Clock size={16} />
+          });
+        }
+      }
+    }
+    return times.sort((a, b) => {
+      const timeA = convertTo24Hour(a.value);
+      const timeB = convertTo24Hour(b.value);
+      return timeA.localeCompare(timeB);
+    });
+  };
+
+  const timeOptions = generateTimeOptions();
+
   const toggleCalendar = () => setShowCalendar(prev => !prev);
+
+  const combineDateTime = (date, time) => {
+    if (!date) return null;
+    const time24h = convertTo24Hour(time);
+    const [hours, minutes] = time24h.split(':');
+    const combinedDate = new Date(date);
+    combinedDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    return combinedDate;
+  };
 
   const handleEditTask = (listId, task, sublistId = null) => {
     setEditingTaskInfo({ listId, taskId: task.id, sublistId });
@@ -60,13 +124,13 @@ const App = () => {
           lists: list.lists.map((sublist) =>
             sublist.id === editingTaskInfo.sublistId
               ? {
-                  ...sublist,
-                  task: sublist.task.map((task) =>
-                    task.id === editingTaskInfo.taskId
-                      ? { ...task, text: editingText }
-                      : task
-                  ),
-                }
+                ...sublist,
+                task: sublist.task.map((task) =>
+                  task.id === editingTaskInfo.taskId
+                    ? { ...task, text: editingText }
+                    : task
+                ),
+              }
               : sublist
           ),
         };
@@ -129,50 +193,119 @@ const App = () => {
     });
   }, [lists, searchText]);
 
-  const completeList = (id) => {
+  const completeList = async (id) => {
     const updatedLists = lists.map(list =>
       list.id === id ? { ...list, completed: !list.completed } : list
     );
-    setLists(updatedLists);
-  };
+    setLists(updatedLists); // Update local state first
 
-  const deleteList = (id) => {
-    const targetList = lists.find(list => list.id === id);
-    if (confirm(`Do you want to delete the "${targetList?.name}" user?`)) {
-      const updatedLists = lists.map(list =>
-        list.id === id ? { ...list, tasks: [], visible: false } : list
-      );
-      setLists(updatedLists);
+    // Find the user whose list was completed
+    const updatedUser = updatedLists.find(user => user.id === id);
+    if (updatedUser) {
+      try {
+        const userRef = doc(db, "users", String(updatedUser.name));
+        await setDoc(userRef, { // Overwrite the entire user document with updated data
+          id: updatedUser.id,
+          name: updatedUser.name,
+          tasks: updatedUser.tasks,
+          lists: updatedUser.lists,
+          completed: updatedUser.completed,
+          notes: updatedUser.notes || '',
+        });
+        console.log("List completion updated successfully in Firebase for user:", updatedUser.name);
+      } catch (error) {
+        console.error("Error updating list completion in Firebase:", error);
+      }
     }
   };
 
-  const completeTaskInList = (listId, taskId) => {
-    setLists(lists.map(list =>
-      list.id === listId
-        ? {
-            ...list,
-            tasks: list.tasks.map(task =>
-              task.id === taskId ? { ...task, completed: !task.completed } : task
-            )
-          }
-        : list
-    ));
+  const deleteList = async (id) => {
+    const targetList = lists.find(list => list.id === id);
+    if (confirm(`Do you want to delete the "${targetList?.name}" user?`)) {
+      const updatedLists = lists.map(list =>
+        list.id === id ? { ...list, tasks: [], visible: false, lists: [] } : list // Also clear sublists
+      );
+      setLists(updatedLists); // Update local state first
+
+      // Delete the corresponding document from Firebase
+      if (targetList) {
+        try {
+          const userRef = doc(db, "users", String(targetList.name));
+          await deleteDoc(userRef); // Delete the user document
+          console.log("User document deleted successfully from Firebase:", targetList.name);
+        } catch (error) {
+          console.error("Error deleting user document from Firebase:", error);
+        }
+      }
+    }
   };
 
-  const deleteTaskFromList = (listId, taskId, doNotAskTaskDelete) => {
+  const completeTaskInList = async (listId, taskId) => {
+    const updatedLists = lists.map(list =>
+      list.id === listId
+        ? {
+          ...list,
+          tasks: list.tasks.map(task =>
+            task.id === taskId ? { ...task, completed: !task.completed } : task
+          )
+        }
+        : list
+    );
+    setLists(updatedLists); // Update local state first
+
+    // Find the user whose task was completed
+    const updatedUser = updatedLists.find(user => user.id === listId);
+    if (updatedUser) {
+      try {
+        const userRef = doc(db, "users", String(updatedUser.name));
+        await setDoc(userRef, { // Overwrite the entire user document with updated data
+          id: updatedUser.id,
+          name: updatedUser.name,
+          tasks: updatedUser.tasks,
+          lists: updatedUser.lists,
+          completed: updatedUser.completed,
+          notes: updatedUser.notes || '',
+        });
+        console.log("Main task completion updated successfully in Firebase for user:", updatedUser.name);
+      } catch (error) {
+        console.error("Error updating main task completion in Firebase:", error);
+      }
+    }
+  };
+
+  const deleteTaskFromList = async (listId, taskId, doNotAskTaskDelete) => {
     const targetList = lists.find(list => list.id === listId);
-    const targetTask = targetList.tasks.find(task => task.id === taskId);
+    const targetTask = targetList?.tasks.find(task => task.id === taskId); // Use optional chaining
 
     if (doNotAskTaskDelete || window.confirm(`Do you want to delete the "${targetTask?.text}" task?`)) {
       const updatedTasks = targetList.tasks.filter(task => task.id !== taskId);
       const updatedLists = lists.map(list =>
         list.id === listId ? { ...list, tasks: updatedTasks } : list
       );
-      setLists(updatedLists);
+      setLists(updatedLists); // Update local state first
+
+      // Find the user whose task was deleted
+      const updatedUser = updatedLists.find(user => user.id === listId);
+      if (updatedUser) {
+        try {
+          const userRef = doc(db, "users", String(updatedUser.name));
+          await setDoc(userRef, { // Overwrite the entire user document with updated data
+            id: updatedUser.id,
+            name: updatedUser.name,
+            tasks: updatedUser.tasks,
+            lists: updatedUser.lists,
+            completed: updatedUser.completed,
+            notes: updatedUser.notes || '',
+          });
+          console.log("Main task deleted successfully from Firebase for user:", updatedUser.name);
+        } catch (error) {
+          console.error("Error deleting main task from Firebase:", error);
+        }
+      }
     }
   };
 
-  const completeSublistTask = (userId, sublistId, taskId) => {
+  const completeSublistTask = async (userId, sublistId, taskId) => {
     const updatedLists = lists.map(user => {
       if (user.id !== userId) return user;
 
@@ -193,10 +326,29 @@ const App = () => {
       };
     });
 
-    setLists(updatedLists);
+    setLists(updatedLists); // Update local state first
+
+    // Find the user whose sublist task was completed
+    const updatedUser = updatedLists.find(user => user.id === userId);
+    if (updatedUser) {
+      try {
+        const userRef = doc(db, "users", String(updatedUser.name));
+        await setDoc(userRef, { // Overwrite the entire user document with updated data
+          id: updatedUser.id,
+          name: updatedUser.name,
+          tasks: updatedUser.tasks,
+          lists: updatedUser.lists,
+          completed: updatedUser.completed,
+          notes: updatedUser.notes || '',
+        });
+        console.log("Sublist task completion updated successfully in Firebase for user:", updatedUser.name);
+      } catch (error) {
+        console.error("Error updating sublist task completion in Firebase:", error);
+      }
+    }
   };
 
-  const deleteSublistTask = (userId, sublistId, taskId, doNotAskTaskDelete) => {
+  const deleteSublistTask = async (userId, sublistId, taskId, doNotAskTaskDelete) => {
     const targetUser = lists.find(user => user.id === userId);
     const targetSublist = targetUser?.lists?.find(sublist => sublist.id === sublistId);
     const targetTask = targetSublist?.task?.find(task => task.id === taskId);
@@ -220,43 +372,86 @@ const App = () => {
         };
       });
 
-      setLists(updatedLists);
+      setLists(updatedLists); // Update local state first
+
+      // Find the user whose sublist task was deleted
+      const updatedUser = updatedLists.find(user => user.id === userId);
+      if (updatedUser) {
+        try {
+          const userRef = doc(db, "users", String(updatedUser.name));
+          await setDoc(userRef, { // Overwrite the entire user document with updated data
+            id: updatedUser.id,
+            name: updatedUser.name,
+            tasks: updatedUser.tasks,
+            lists: updatedUser.lists,
+            completed: updatedUser.completed,
+            notes: updatedUser.notes || '',
+          });
+          console.log("Sublist task deleted successfully from Firebase for user:", updatedUser.name);
+        } catch (error) {
+          console.error("Error deleting sublist task from Firebase:", error);
+        }
+      }
     }
   };
 
-  const handleAddTaskToSublist = (userId, sublistId, taskText, taskDeadline, taskPriority) => {
+  const handleAddTaskToSublist = async (userId, sublistId, taskText, taskDeadline, taskTime, taskPriority) => {
     const updatedLists = lists.map(user => {
       if (user.id !== userId) return user;
-  
+
       const updatedSublists = user.lists.map(sublist => {
         if (sublist.id !== sublistId) return sublist;
-  
+
+        const combinedDeadline = combineDateTime(taskDeadline || today, taskTime || '11:59 PM');
+
         const newTask = {
-          id: Date.now(),
+          id: Date.now(), // Generate a unique ID for the new task
           text: taskText,
-          deadline: taskDeadline || today,
+          deadline: combinedDeadline || today,
+          deadlineTime: taskTime || '11:59 PM',
           completed: false,
           priority: taskPriority,
           notes: ''
         };
-  
+
         return {
           ...sublist,
-          task: [...(sublist.task || []), newTask]
+          task: [...(sublist.task || []), newTask] // Ensure sublist.task is an array
         };
       });
-  
+
       return {
         ...user,
         lists: updatedSublists
       };
     });
-  
-    setLists(updatedLists);
+
+    setLists(updatedLists); // Update local state first
+
+    // Find the user to update in Firebase
+    const updatedUser = updatedLists.find(user => user.id === userId);
+    if (updatedUser) {
+      try {
+        const userRef = doc(db, "users", String(updatedUser.name));
+        await setDoc(userRef, { // Overwrite the entire user document with updated data
+          id: updatedUser.id,
+          name: updatedUser.name,
+          tasks: updatedUser.tasks,
+          lists: updatedUser.lists, // Crucially, include the updated sublists
+          completed: updatedUser.completed,
+          notes: updatedUser.notes || '',
+        });
+        console.log("Sublist task added successfully to Firebase for user:", updatedUser.name);
+      } catch (error) {
+        console.error("Error adding sublist task to Firebase:", error);
+      }
+    }
   };
 
   const handleAdd = () => {
     if (!inputValue.trim() || !selectedUser) return;
+
+    const combinedDeadline = combineDateTime(deadline || new Date(formattedDate), deadlineTime);
 
     const updatedLists = lists.map(user => {
       if (user.id !== selectedUser) return user;
@@ -266,7 +461,8 @@ const App = () => {
           id: Date.now(),
           text: inputValue.trim(),
           completed: false,
-          deadline: deadline || formattedDate,
+          deadline: combinedDeadline || new Date(formattedDate),
+          deadlineTime: deadlineTime,
           priority: selectedPriority,
           notes: ''
         };
@@ -318,6 +514,7 @@ const App = () => {
     uploadToFirebase();
     setInputValue('');
     setDeadline(null);
+    setDeadlineTime('11:59 PM');
     setSelectedPriority('mid');
   };
 
@@ -388,27 +585,36 @@ const App = () => {
           <button
             onClick={toggleCalendar}
             style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-            title="Pick deadline"
+            title="Pick deadline date and time"
           >
             <CalendarDays size={24} />
           </button>
 
           {showCalendar && (
-            <div style={{
-              position: 'absolute',
-              top: '35px',
-              zIndex: 100,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-            }}>
+            <div className="calendar-dropdown">
               <DatePicker
                 selected={deadline}
-                onChange={(date) => {
-                  setDeadline(date);
-                  setShowCalendar(false);
-                }}
+                onChange={(date) => setDeadline(date)}
                 inline
                 minDate={new Date()}
               />
+              <div className="time-selection">
+                <label className="time-label">Select Time:</label>
+                <CustomDropdown
+                  options={timeOptions}
+                  selectedValue={deadlineTime}
+                  setSelectedValue={setDeadlineTime}
+                  placeholder="Time"
+                />
+              </div>
+              <div className="calendar-actions">
+                <button
+                  onClick={() => setShowCalendar(false)}
+                  className="calendar-done-btn"
+                >
+                  Done
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -438,21 +644,6 @@ const App = () => {
                     subLists={list.lists}
                     onComplete={completeList}
                     onDelete={deleteList}
-                    onAddTask={(listId, taskText, deadline) => {
-                      const updated = lists.map(user => {
-                        if (user.id !== listId) return user;
-                        const newTask = {
-                          id: Date.now(),
-                          text: taskText,
-                          completed: false,
-                          deadline: deadline || formattedDate,
-                          priority: 'mid',
-                          notes: ''
-                        };
-                        return { ...user, tasks: [...user.tasks, newTask] };
-                      });
-                      setLists(updated);
-                    }}
                     onAddTaskToSublist={handleAddTaskToSublist}
                     onCompleteTask={completeTaskInList}
                     onDeleteTask={deleteTaskFromList}

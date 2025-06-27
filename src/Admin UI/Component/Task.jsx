@@ -43,6 +43,31 @@ const Task = ({
     }
   };
 
+  const formatDeadlineWithTime = (deadline, deadlineTime) => {
+    if (!deadline) return 'No deadline set';
+    
+    const date = new Date(deadline);
+    const dateStr = date.toLocaleDateString();
+    
+    // If deadlineTime exists (12-hour format), use it; otherwise extract from deadline
+    let timeStr = '11:59 PM'; // default
+    
+    if (deadlineTime) {
+      timeStr = deadlineTime;
+    } else if (deadline instanceof Date || typeof deadline === 'string') {
+      const dateObj = new Date(deadline);
+      if (!isNaN(dateObj.getTime())) {
+        const hours = dateObj.getHours();
+        const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const hour12 = hours % 12 || 12;
+        timeStr = `${hour12}:${minutes} ${ampm}`;
+      }
+    }
+    
+    return `${dateStr} at ${timeStr}`;
+  };
+
   return (
     <div className={`task-item ${task.completed ? 'completed' : ''}`} style={{borderBottomColor: priority === 'low' ? "#44ff44" : priority === 'mid' ? '#ffd528' :'#ff4444'}}>
       <div className="task-content">
@@ -76,7 +101,7 @@ const Task = ({
               </div>
             )}
             <div className="deadline-text">
-              Deadline: {new Date(task.deadline).toLocaleDateString()}
+              Deadline: {formatDeadlineWithTime(task.deadline, task.deadlineTime)}
             </div>
           </div>
         </div>

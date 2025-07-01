@@ -20,6 +20,7 @@ const TodoList = ({
   onSaveEdit,
   onCancelEdit,
   onAddTaskToSublist,
+  onDeleteSublist,
   onCompleteSublistTask,
   onDeleteSublistTask,
 }) => {
@@ -159,6 +160,8 @@ const TodoList = ({
       setSublistTimes((prev) => ({ ...prev, [sublistId]: '11:59 PM' }));
       setSublistCalendars(prev => ({ ...prev, [sublistId]: false }));
     }
+
+    setShowSubTasks(true);
   };
 
   const totalTasks = list.tasks.length;
@@ -252,9 +255,27 @@ const TodoList = ({
                 <h4 className="sublist-title">📂 Sub Lists</h4>
                 {list.lists.map((subList) => (
                   <div key={subList.id} className="sublist-card">
+                    <div style={{
+                      display: "flex",}}> 
                     <p className="sublist-name">
                       <strong>{subList.name}</strong>
                     </p>
+
+                    <button
+                      onClick={() => onDeleteSublist(list.id, subList.id)}
+                      className="delete-sublist-btn"
+                      title="Delete this sublist"
+                      style={{
+                        marginLeft: "auto",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        color: "#ff5555"
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    </div>
 
                     <div
                       style={{

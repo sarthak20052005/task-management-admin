@@ -13,20 +13,21 @@ import { GrainOverlay, GrainContainer } from './GrainOverlay01';
 import './App.css';
 
 // Firebase
-import { collection, addDoc, setDoc, doc, deleteDoc } from "firebase/firestore";
+import { collection, addDoc, setDoc, doc, deleteDoc, getDocs} from "firebase/firestore";
 import { db } from "../firebase";
 
 const App = () => {
-  const initialUsers = [
-    { id: 1, name: 'Harmish', tasks: [], completed: false, visible: true, lists: [] },
-    { id: 2, name: 'Aarush', tasks: [], completed: false, visible: true, lists: [] },
-    { id: 3, name: 'Animesh', tasks: [], completed: false, visible: true, lists: [] },
-    { id: 4, name: 'Ayush', tasks: [], completed: false, visible: true, lists: [] },
-    { id: 5, name: 'Sarthak', tasks: [], completed: false, visible: true, lists: [] },
-    { id: 6, name: 'Mansi', tasks: [], completed: false, visible: true, lists: [] },
-  ];
+  // const initialUsers = [
+  //   // { id: 1, name: 'Harmish', tasks: [], completed: false, visible: true, lists: [] },
+  //   // { id: 2, name: 'Aarush', tasks: [], completed: false, visible: true, lists: [] },
+  //   // { id: 3, name: 'Animesh', tasks: [], completed: false, visible: true, lists: [] },
+  //   // { id: 4, name: 'Ayush', tasks: [], completed: false, visible: true, lists: [] },
+  //   // { id: 5, name: 'Sarthak', tasks: [], completed: false, visible: true, lists: [] },
+  //   // { id: 6, name: 'Mansi', tasks: [], completed: false, visible: true, lists: [] },
+  // ];
+  // const [users, setUsers] = useState(initialUsers);
 
-  const [lists, setLists] = useState(initialUsers);
+  const [lists, setLists] = useState([]);
   const [selectedType, setSelectedType] = useState('task');
   const [inputValue, setInputValue] = useState('');
   const [selectedUser, setSelectedUser] = useState('');
@@ -105,6 +106,50 @@ const App = () => {
     combinedDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
     return combinedDate;
   };
+
+  //Fetching user from Database
+  async function fetchUsersFromFirebase() {
+    try {
+      const usersCollection = collection(db, "users");
+      const querySnapshot = await getDocs(usersCollection);
+      
+      if (querySnapshot.empty) {
+        console.log("No users found in the database");
+        return [];
+      }
+  
+      const users = [];
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        
+        // More comprehensive validation
+        if (data && typeof data === 'object') {
+          users.push({
+            docId: docSnap.id,
+            id: data.id || docSnap.id, 
+            name: data.name || data.fullName ||'Unknown',
+            tasks: data.tasks || [],
+            lists: data.lists || [],
+            completed: data.completed || false,
+            visible: data.visible !== false, 
+            notes: data.notes || ''
+          });
+        }
+      });
+  
+      console.log(`Fetched ${users.length} users from Firebase:`, users);   
+      setLists(users);
+      return users;
+    } catch (error) {
+      console.error("Error fetching users from Firebase:", error);
+      return [];
+    }
+  }
+
+  useEffect(() => {
+    fetchUsersFromFirebase();
+  }, []);
+  
 
   const handleEditTask = (listId, task, sublistId = null) => {
     setEditingTaskInfo({ listId, taskId: task.id, sublistId });
@@ -231,10 +276,18 @@ const App = () => {
       if (targetList) {
         try {
           const userRef = doc(db, "users", String(targetList.name));
-          await deleteDoc(userRef); // Delete the user document
-          console.log("User document deleted successfully from Firebase:", targetList.name);
+          await setDoc(userRef, {
+            id: targetList.id,
+            name: targetList.name,
+            tasks: [],
+            lists: [],
+            completed: false,
+            visible: false, // Only mark as hidden
+            notes: targetList.notes || '',
+          });
+          console.log(`Cleared tasks and lists for user "${targetList.name}" in Firebase (not deleted).`);
         } catch (error) {
-          console.error("Error deleting user document from Firebase:", error);
+          console.error("Error clearing user tasks in Firebase:", error);
         }
       }
     }
@@ -432,7 +485,7 @@ const App = () => {
     const updatedUser = updatedLists.find(user => user.id === userId);
     if (updatedUser) {
       try {
-        const userRef = doc(db, "users", String(updatedUser.name));
+        const userRef = doc(db, "users", String(updatedUser.id));
         await setDoc(userRef, { // Overwrite the entire user document with updated data
           id: updatedUser.id,
           name: updatedUser.name,
@@ -447,6 +500,43 @@ const App = () => {
       }
     }
   };
+
+  const deleteSublist = async (userId, sublistId) => {
+    const targetUser = lists.find(user => user.id === userId);
+    const targetSublist = targetUser?.lists?.find(sublist => sublist.id === sublistId);
+
+    if (confirm(`Do you want to delete the "${targetSublist?.name}" sublist?`)) {
+      const updatedLists = lists.map(user => {
+        if (user.id !== userId) return user;
+
+        return {
+          ...user,
+          lists: user.lists.filter(sublist => sublist.id !== sublistId)
+        };
+      });
+
+      setLists(updatedLists); // Update local state first
+
+      // Find the user whose sublist was deleted
+      const updatedUser = updatedLists.find(user => user.id === userId);
+      if (updatedUser) {
+        try {
+          const userRef = doc(db, "users", String(updatedUser.id));
+          await setDoc(userRef, { 
+            id: updatedUser.id,
+            name: updatedUser.name,
+            tasks: updatedUser.tasks,
+            lists: updatedUser.lists, 
+            completed: updatedUser.completed,
+            notes: updatedUser.notes || '',
+          });
+          console.log("Sublist deleted successfully from Firebase for user:", updatedUser.name);
+        } catch (error) {
+          console.error("Error deleting sublist from Firebase:", error);
+        }
+      }
+    }
+  }
 
   const handleAdd = () => {
     if (!inputValue.trim() || !selectedUser) return;
@@ -496,7 +586,7 @@ const App = () => {
 
     const uploadToFirebase = async () => {
       try {
-        const userRef = doc(db, "users", String(updatedUser.name));
+        const userRef = doc(db, "users", String(updatedUser.id));
         await setDoc(userRef, {
           id: updatedUser.id,
           name: updatedUser.name,
@@ -647,6 +737,7 @@ const App = () => {
                     onAddTaskToSublist={handleAddTaskToSublist}
                     onCompleteTask={completeTaskInList}
                     onDeleteTask={deleteTaskFromList}
+                    onDeleteSublist={deleteSublist}
                     onCompleteSublistTask={completeSublistTask}
                     onDeleteSublistTask={deleteSublistTask}
                     editingTaskInfo={editingTaskInfo}

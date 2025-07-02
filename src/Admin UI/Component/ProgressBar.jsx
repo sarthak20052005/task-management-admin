@@ -1,5 +1,5 @@
 import React from 'react'
-import './comp Css/ProgressBar.css'
+import './compcss/ProgressBar.css'
 
 const ProgressBar = ({completedTask,total,onCompleteList}) => {
 

@@ -1,7 +1,7 @@
 // CustomDropdown.jsx
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import './Comp Css/CustomDropDown.css';
+import './comp Css/CustomDropDown.css';
 
 const CustomDropdown = ({ options, selectedValue, setSelectedValue, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);

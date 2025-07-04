@@ -13,8 +13,14 @@ import { GrainOverlay, GrainContainer } from './GrainOverlay01';
 import './App.css';
 
 // Firebase
-import { collection, addDoc, setDoc, doc, deleteDoc, getDocs} from "firebase/firestore";
+import { collection, addDoc, setDoc, doc, deleteDoc, getDocs, updateDoc} from "firebase/firestore";
 import { db } from "../firebase";
+
+
+//Fluid
+import { Fluid } from '@whatisjery/react-fluid-distortion';
+import { EffectComposer } from '@react-three/postprocessing';
+import { Canvas } from '@react-three/fiber';
 
 const App = () => {
   // const initialUsers = [
@@ -393,6 +399,7 @@ const App = () => {
           lists: updatedUser.lists,
           completed: updatedUser.completed,
           notes: updatedUser.notes || '',
+          role: 'admin'
         });
         console.log("Sublist task completion updated successfully in Firebase for user:", updatedUser.name);
       } catch (error) {
@@ -485,7 +492,7 @@ const App = () => {
     const updatedUser = updatedLists.find(user => user.id === userId);
     if (updatedUser) {
       try {
-        const userRef = doc(db, "users", String(updatedUser.id));
+        const userRef = doc(db, "users", String(updatedUser.name));
         await setDoc(userRef, { // Overwrite the entire user document with updated data
           id: updatedUser.id,
           name: updatedUser.name,
@@ -493,6 +500,7 @@ const App = () => {
           lists: updatedUser.lists, // Crucially, include the updated sublists
           completed: updatedUser.completed,
           notes: updatedUser.notes || '',
+          archived: updatedUser.archived || false, 
         });
         console.log("Sublist task added successfully to Firebase for user:", updatedUser.name);
       } catch (error) {
@@ -521,7 +529,7 @@ const App = () => {
       const updatedUser = updatedLists.find(user => user.id === userId);
       if (updatedUser) {
         try {
-          const userRef = doc(db, "users", String(updatedUser.id));
+          const userRef = doc(db, "users", String(updatedUser.name));
           await setDoc(userRef, { 
             id: updatedUser.id,
             name: updatedUser.name,
@@ -554,7 +562,8 @@ const App = () => {
           deadline: combinedDeadline || new Date(formattedDate),
           deadlineTime: deadlineTime,
           priority: selectedPriority,
-          notes: ''
+          notes: '',
+          role: 'admin'
         };
         return {
           ...user,
@@ -586,7 +595,7 @@ const App = () => {
 
     const uploadToFirebase = async () => {
       try {
-        const userRef = doc(db, "users", String(updatedUser.id));
+        const userRef = doc(db, "users", String(updatedUser.name));
         await setDoc(userRef, {
           id: updatedUser.id,
           name: updatedUser.name,
@@ -626,6 +635,33 @@ const App = () => {
   ];
 
   return (
+    <>
+    <Canvas
+      style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          height: '100vh',
+          width: '100vw',
+          background: '#000000',
+          zIndex: 0,                // Keep it above -1
+          pointerEvents: 'none',
+      }}>
+      <EffectComposer>
+          <Fluid
+          radius={0.2}
+          distortion={1}
+          force={2}
+          pressure={0.94}
+          densityDissipation={0.98}
+          velocityDissipation={0.99}
+          intensity={0.3}
+          rainbow={false}
+          blend={0}
+          showBackground={true}
+          fluidColor='#0d0b12'/>
+      </EffectComposer>
+    </Canvas>
     <div className="app">
       <div className="app-header">
         <h1 className="app-title">Todo App</h1>
@@ -641,82 +677,88 @@ const App = () => {
       </div>
 
       <div className="add-form">
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
-          placeholder="Add a new task or list..."
-          className="main-input"
-        />
+  <div className="form-controls">
+    <CustomDropdown
+      options={userOptions}
+      selectedValue={selectedUser}
+      setSelectedValue={setSelectedUser}
+      placeholder="Select User"
+    />
 
-        <CustomDropdown
-          options={userOptions}
-          selectedValue={selectedUser}
-          setSelectedValue={setSelectedUser}
-          placeholder="Select User"
-        />
+    <CustomDropdown
+      options={typesOptions}
+      selectedValue={selectedType}
+      setSelectedValue={setSelectedType}
+      placeholder="Select Type"
+    />
 
-        <CustomDropdown
-          options={typesOptions}
-          selectedValue={selectedType}
-          setSelectedValue={setSelectedType}
-          placeholder="Select Type"
-        />
+    <CustomDropdown
+      options={priorityOptions}
+      selectedValue={selectedPriority}
+      setSelectedValue={setSelectedPriority}
+      placeholder="Priority"
+    />
 
-        <CustomDropdown
-          options={priorityOptions}
-          selectedValue={selectedPriority}
-          setSelectedValue={setSelectedPriority}
-          placeholder="Priority"
-        />
+    <div className="calendar-container">
+      <button
+        onClick={toggleCalendar}
+        className="calendar-button"
+        title="Pick deadline date and time"
+      >
+        <CalendarDays size={20} />
+      </button>
 
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-          <button
-            onClick={toggleCalendar}
-            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-            title="Pick deadline date and time"
-          >
-            <CalendarDays size={24} />
-          </button>
-
-          {showCalendar && (
-            <div className="calendar-dropdown">
-              <DatePicker
-                selected={deadline}
-                onChange={(date) => setDeadline(date)}
-                inline
-                minDate={new Date()}
-              />
-              <div className="time-selection">
-                <label className="time-label">Select Time:</label>
-                <CustomDropdown
-                  options={timeOptions}
-                  selectedValue={deadlineTime}
-                  setSelectedValue={setDeadlineTime}
-                  placeholder="Time"
-                />
-              </div>
-              <div className="calendar-actions">
-                <button
-                  onClick={() => setShowCalendar(false)}
-                  className="calendar-done-btn"
-                >
-                  Done
-                </button>
-              </div>
-            </div>
-          )}
+      {showCalendar && (
+        <div className="calendar-dropdown">
+          <DatePicker
+            selected={deadline}
+            onChange={(date) => setDeadline(date)}
+            inline
+            minDate={new Date()}
+          />
+          <div className="time-selection-container"> 
+          <div className="time-selection">
+            <label className="time-label">Select Time:</label>
+            <CustomDropdown
+              options={timeOptions}
+              selectedValue={deadlineTime}
+              setSelectedValue={setDeadlineTime}
+              placeholder="Time"
+            />
+          </div>
+          <div className="calendar-actions">
+            <button
+              onClick={() => setShowCalendar(false)}
+              className="calendar-done-btn"
+            >
+              Done
+            </button>
+          </div>
+          </div>
         </div>
+      )}
+    </div>
+  </div>
 
-        <button
-          onClick={handleAdd}
-          className="add-btn primary"
-          disabled={!inputValue.trim() || !selectedUser}
-        >
-          <Plus size={16} /> Add
-        </button>
-      </div>
+  <textarea
+    value={inputValue}
+    onChange={(e) => setInputValue(e.target.value)}
+    onKeyPress={(e) => e.key === 'Enter' && e.ctrlKey && handleAdd()}
+    placeholder="Describe your task or list in detail... (Press Ctrl+Enter to add)"
+    className="main-input"
+    rows="4"
+  />
+
+  <div className="form-actions">
+    <button
+      onClick={handleAdd}
+      className="add-btn primary"
+      disabled={!inputValue.trim() || !selectedUser}
+    >
+      <Plus size={16} /> Add Task
+    </button>
+  </div>
+</div>
 
       <div className="content-area">
         {filteredLists.length > 0 ? (
@@ -757,6 +799,7 @@ const App = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 
